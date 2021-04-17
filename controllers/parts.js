@@ -12,7 +12,10 @@ export const getParts = async (req, res) => {
 
 export const partCreation = async (req, res) => {
   const part = req.body;
-  const newPart = new PostMessage(part);
+
+  console.log(part);
+
+  const newPart = new buildPart(part);
 
   try {
     await newPart.save();
