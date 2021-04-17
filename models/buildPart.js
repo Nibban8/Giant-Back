@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const partchema = mongoose.Schema({
+const partSchema = mongoose.Schema({
   nombre: String,
   marca: String,
   tipo: String,
@@ -12,6 +12,6 @@ const partchema = mongoose.Schema({
   },
 });
 
-const PostMessage = mongoose.model('PostMessage', postSchema);
+const BuildPart = mongoose.model('BuildPart', partSchema);
 
-export default PostMessage;
+export default BuildPart;
