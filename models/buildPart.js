@@ -13,8 +13,12 @@ const partSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  precio: {
+    type: Number,
+    required: true,
+  },
   interfaz: String,
-  tags: [String],
+  descripcion: String,
   selectedFile: String,
   createdAt: {
     type: Date,
