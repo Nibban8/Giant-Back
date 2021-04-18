@@ -3,7 +3,7 @@ import buildPart from '../models/buildPart.js';
 export const getParts = async (req, res) => {
   try {
     const buildParts = await buildPart.find();
-    console.log(buildParts);
+
     res.status(200).json(buildParts);
   } catch (error) {
     res.status(404).json({ message: error.message });

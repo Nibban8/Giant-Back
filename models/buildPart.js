@@ -1,10 +1,20 @@
 import mongoose from 'mongoose';
 
 const partSchema = mongoose.Schema({
-  nombre: String,
-  marca: String,
-  tipo: String,
-  creator: String,
+  nombre: {
+    type: String,
+    required: true,
+  },
+  marca: {
+    type: String,
+    required: true,
+  },
+  tipo: {
+    type: String,
+    required: true,
+  },
+  interfaz: String,
+  tags: [String],
   selectedFile: String,
   createdAt: {
     type: Date,
