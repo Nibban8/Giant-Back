@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import cors from 'cors';
 
-import postRoutes from './routes/posts.js';
+import buildRoutes from './routes/builds.js';
 import partRoutes from './routes/parts.js';
 const app = express();
 
@@ -11,7 +11,7 @@ app.use(express.json({ limit: '30mb', extended: true }));
 app.use(express.urlencoded({ limit: '30mb', extended: true }));
 app.use(cors());
 
-app.use('/posts', postRoutes);
+app.use('/builds', buildRoutes);
 app.use('/parts', partRoutes);
 
 const CONNECTION_URL =

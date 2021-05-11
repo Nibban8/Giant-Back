@@ -14,7 +14,6 @@ export const getParts = async (req, res) => {
 };
 
 // Get part by id
-//  /parts/id
 
 export const getPart = async (req, res) => {
   const { id: _id } = req.params;
@@ -31,7 +30,7 @@ export const getPart = async (req, res) => {
   }
 };
 
-// Create part
+// Create part by id
 
 export const partCreation = async (req, res) => {
   const part = req.body;
@@ -41,12 +40,11 @@ export const partCreation = async (req, res) => {
     await newPart.save();
     res.status(201).json(newPart);
   } catch (error) {
-    res.status(409).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update by id
-//  /parts/id
+// Update part by id
 
 export const updatePart = async (req, res) => {
   const { id: _id } = req.params;
@@ -62,8 +60,7 @@ export const updatePart = async (req, res) => {
   res.json(updatedPart);
 };
 
-// Delete by id
-//  /parts/id
+// Delete part by id
 
 export const deletePart = async (req, res) => {
   const { id: _id } = req.params;
