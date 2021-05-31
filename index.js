@@ -96,6 +96,6 @@ app.post('/stripeWebHook', async (req, res) => {
   });
 });
 
-app.listen(${PORT}, () =>
+app.listen(PORT, () =>
   console.log(`Aplicacion corriendo en puerto ${PORT} \n`)
 );
