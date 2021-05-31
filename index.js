@@ -83,7 +83,6 @@ app.post(
       paymentStatus: dataObject.payment_status,
       shippingInfo: dataObject.shipping,
       amountTotal: dataObject.amount_total,
-      partes: dataObject.line_items,
     });
 
     response.json({ received: true });
