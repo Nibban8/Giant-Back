@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const firebase = require('firebase');
+const bodyParser = require('body-parser');
+const { response } = require('express');
 
 const app = express();
 
@@ -68,34 +70,55 @@ app.post('/checkout', async (req, res) => {
   res.json({ id: session.id });
 });
 
-//app.post('/checkout', async (req, res) => {
+app.post(
+  '/stripeWebHook',
+  express.raw({ type: 'application/json' }),
+  (req, res) => {
+    const event = req.body;
 
-app.post('/stripeWebHook', async (req, res) => {
-  let event;
+    const dataObject = event.data.object;
 
-  try {
-    const whSec = require('stripe')('whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT'); // secret key
+    await admin.firestore().collection('ensambles').doc().set({
+      checkoutSessionId: dataObject.id,
+      paymentStatus: dataObject.payment_status,
+      shippingInfo: dataObject.shipping,
+      amountTotal: dataObject.amount_total,
+      partes: dataObject.line_items,
+    });
 
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      req.headers['stripe-signature'],
-      whSec
-    );
-  } catch (error) {
-    console.error('aguas perro, ese no es stripe');
-    return res.sendStatus(400);
+    response.json({ received: true });
   }
+);
 
-  const dataObject = event.data.object;
+// app.post('/stripeWebHook', async (req, res) => {
+//   const stripe = require('stripe')(
+//     'sk_test_51IujvAIqOpiH1XDDQYgrNyuA1gjsfgYvfEFnON1dr4CRphI5FwNRjVCyqvZTinPVgspbeDN3MuRhIcKW3dCNSYNq003Jt4LYy9'
+//   );
+//   let event;
 
-  await admin.firestore().collection('ensambles').doc().set({
-    checkoutSessionId: dataObject.id,
-    paymentStatus: dataObject.payment_status,
-    shippingInfo: dataObject.shipping,
-    amountTotal: dataObject.amount_total,
-    partes: dataObject.line_items,
-  });
-});
+//   try {
+//     const whSec = require('stripe')('whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT'); // secret key
+
+//     event = stripe.webhooks.constructEvent(
+//       req.rawBody,
+//       req.headers['stripe-signature'],
+//       whSec
+//     );
+//   } catch (error) {
+//     console.error('aguas perro, ese no es stripe');
+//     return res.sendStatus(400);
+//   }
+
+//   const dataObject = event.data.object;
+
+//   await admin.firestore().collection('ensambles').doc().set({
+//     checkoutSessionId: dataObject.id,
+//     paymentStatus: dataObject.payment_status,
+//     shippingInfo: dataObject.shipping,
+//     amountTotal: dataObject.amount_total,
+//     partes: dataObject.line_items,
+//   });
+// });
 
 app.listen(PORT, () =>
   console.log(`Aplicacion corriendo en puerto ${PORT} \n`)
