@@ -70,58 +70,60 @@ app.post("/checkout", async (req, res) => {
   res.json({ id: session.id });
 });
 
-// app.post(
-//   '/stripeWebHook',
-//   express.raw({ type: 'application/json' }),
-//   async (req, res) => {
-//     const event = req.body;
-
-//     const dataObject = event.data.object;
-
-//     await db.collection('ensambles').doc().set({
-//       checkoutSessionId: dataObject.id,
-//       paymentStatus: dataObject.payment_status,
-//       shippingInfo: dataObject.shipping,
-//       amountTotal: dataObject.amount_total,
-//       customerDetails: dataObject.customer_details,
-//     });
-
-//     response.json({ received: true });
-//   }
-// );
-
 app.post(
   "/stripeWebHook",
   express.raw({ type: "application/json" }),
   async (req, res) => {
-    const stripe = require("stripe")(
-      "sk_test_51IujvAIqOpiH1XDDQYgrNyuA1gjsfgYvfEFnON1dr4CRphI5FwNRjVCyqvZTinPVgspbeDN3MuRhIcKW3dCNSYNq003Jt4LYy9"
-    );
-    let event;
-
-    try {
-      const whSec = "whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT"; // secret key
-
-      event = stripe.webhooks.constructEvent(
-        req.rawBody,
-        req.headers["stripe-signature"],
-        whSec
-      );
-    } catch (error) {
-      console.error(error);
-      return res.sendStatus(400);
-    }
+    const event = req.body;
 
     const dataObject = event.data.object;
 
-    await admin.firestore().collection("ensambles").doc().set({
+    await db.collection("ensambles").doc().set({
       checkoutSessionId: dataObject.id,
       paymentStatus: dataObject.payment_status,
       shippingInfo: dataObject.shipping,
       amountTotal: dataObject.amount_total,
+      customerDetails: dataObject.customer_details,
     });
+
+    response.json({ received: true });
   }
 );
+
+// app.use(express.raw({ type: "application/json" }));
+
+// app.post(
+//   "/stripeWebHook",
+//   express.raw({ type: "application/json" }),
+//   async (req, res) => {
+//     const stripe = require("stripe")(
+//       "sk_test_51IujvAIqOpiH1XDDQYgrNyuA1gjsfgYvfEFnON1dr4CRphI5FwNRjVCyqvZTinPVgspbeDN3MuRhIcKW3dCNSYNq003Jt4LYy9"
+//     );
+//     let event;
+
+//     try {
+//       const whSec = "whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT"; // secret key
+
+//       event = stripe.webhooks.constructEvent(
+//         req.rawBody,
+//         req.headers["stripe-signature"],
+//         whSec
+//       );
+//     } catch (error) {
+//       console.error(error);
+//       return res.sendStatus(400);
+//     }
+
+//     const dataObject = event.data.object;
+
+//     await admin.firestore().collection("ensambles").doc().set({
+//       checkoutSessionId: dataObject.id,
+//       paymentStatus: dataObject.payment_status,
+//       shippingInfo: dataObject.shipping,
+//       amountTotal: dataObject.amount_total,
+//     });
+//   }
+// );
 
 app.listen(PORT, () =>
   console.log(`Aplicacion corriendo en puerto ${PORT} \n`)
