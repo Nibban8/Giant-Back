@@ -90,34 +90,38 @@ app.post("/checkout", async (req, res) => {
 //   }
 // );
 
-app.post("/stripeWebHook", async (req, res) => {
-  const stripe = require("stripe")(
-    "sk_test_51IujvAIqOpiH1XDDQYgrNyuA1gjsfgYvfEFnON1dr4CRphI5FwNRjVCyqvZTinPVgspbeDN3MuRhIcKW3dCNSYNq003Jt4LYy9"
-  );
-  let event;
-
-  try {
-    const whSec = "whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT"; // secret key
-
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      req.headers["stripe-signature"],
-      whSec
+app.post(
+  "/stripeWebHook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    const stripe = require("stripe")(
+      "sk_test_51IujvAIqOpiH1XDDQYgrNyuA1gjsfgYvfEFnON1dr4CRphI5FwNRjVCyqvZTinPVgspbeDN3MuRhIcKW3dCNSYNq003Jt4LYy9"
     );
-  } catch (error) {
-    console.error(error);
-    return res.sendStatus(400);
+    let event;
+
+    try {
+      const whSec = "whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT"; // secret key
+
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        req.headers["stripe-signature"],
+        whSec
+      );
+    } catch (error) {
+      console.error(error);
+      return res.sendStatus(400);
+    }
+
+    const dataObject = event.data.object;
+
+    await admin.firestore().collection("ensambles").doc().set({
+      checkoutSessionId: dataObject.id,
+      paymentStatus: dataObject.payment_status,
+      shippingInfo: dataObject.shipping,
+      amountTotal: dataObject.amount_total,
+    });
   }
-
-  const dataObject = event.data.object;
-
-  await admin.firestore().collection("ensambles").doc().set({
-    checkoutSessionId: dataObject.id,
-    paymentStatus: dataObject.payment_status,
-    shippingInfo: dataObject.shipping,
-    amountTotal: dataObject.amount_total,
-  });
-});
+);
 
 app.listen(PORT, () =>
   console.log(`Aplicacion corriendo en puerto ${PORT} \n`)
