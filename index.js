@@ -34,6 +34,8 @@ app.post("/checkout", async (req, res) => {
 
   let items = [];
 
+  let meta = {};
+
   const querySnapshot = await db.collection("partes").get();
   const docs = [];
   querySnapshot.forEach((doc) => {
@@ -61,7 +63,7 @@ app.post("/checkout", async (req, res) => {
     shipping_address_collection: {
       allowed_countries: ["MX"],
     },
-    metadata: { partes: items },
+    metadata: JSON.stringify(items),
     mode: "payment",
     success_url: "https://example.com/success",
     // success_url: 'http://localhost:3000/finalizada',
