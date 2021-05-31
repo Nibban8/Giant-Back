@@ -103,7 +103,7 @@ app.post(
       const whSec = "whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT"; // secret key
 
       event = stripe.webhooks.constructEvent(
-        req.body,
+        req.rawBody,
         req.headers["stripe-signature"],
         whSec
       );
