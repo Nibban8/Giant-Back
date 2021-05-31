@@ -78,7 +78,7 @@ app.post(
 
     const dataObject = event.data.object;
 
-    await admin.firestore().collection('ensambles').doc().set({
+    await db.collection('ensambles').doc().set({
       checkoutSessionId: dataObject.id,
       paymentStatus: dataObject.payment_status,
       shippingInfo: dataObject.shipping,
