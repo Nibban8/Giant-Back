@@ -97,7 +97,7 @@ app.post('/stripeWebHook', async (req, res) => {
   let event;
 
   try {
-    const whSec = require('stripe')('whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT'); // secret key
+    const whSec = 'whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT'; // secret key
 
     event = stripe.webhooks.constructEvent(
       req.rawBody,
