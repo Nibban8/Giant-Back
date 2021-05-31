@@ -85,7 +85,7 @@ app.post(
       shippingInfo: dataObject.shipping,
       amountTotal: dataObject.amount_total,
       customerDetails: dataObject.customer_details,
-      Items: dataObject.line_items,
+      partes: dataObject.metadata,
     });
 
     response.json({ received: true });
