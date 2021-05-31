@@ -61,7 +61,7 @@ app.post("/checkout", async (req, res) => {
     shipping_address_collection: {
       allowed_countries: ["MX"],
     },
-    metadata: { items },
+    metadata: { partes: items },
     mode: "payment",
     success_url: "https://example.com/success",
     // success_url: 'http://localhost:3000/finalizada',
