@@ -16,6 +16,7 @@ var firebaseConfig = {
   messagingSenderId: '419535352577',
   appId: '1:419535352577:web:1a338cd78eb42e52ec2100',
 };
+
 // Initialize Firebase
 const fb = firebase.initializeApp(firebaseConfig);
 const db = fb.firestore();
@@ -29,40 +30,69 @@ const PORT = process.env.PORT || 5000;
 app.post('/checkout', async (req, res) => {
   const { equipo } = req.body;
 
-  console.log(req.body);
-
   let items = [];
 
+  const querySnapshot = await db.collection('partes').get();
+  const docs = [];
+  querySnapshot.forEach((doc) => {
+    docs.push({ ...doc.data(), id: doc.id, selected: false });
+  });
+
   for (const parte of equipo) {
-    const partRef = db.collection('partes').doc(parte);
-    const doc = await partRef.get();
-    if (!doc.exists) {
-      console.log('No such document!');
-    } else {
-      const { nombre, precio } = doc.data();
-      const item = {
-        price_data: {
-          currency: 'mxn',
-          product_data: {
-            name: nombre,
-          },
-          unit_amount: parseFloat(precio) * 100,
+    const { nombre, precio } = docs.find((doc) => doc.id === parte);
+    const item = {
+      price_data: {
+        currency: 'mxn',
+        product_data: {
+          name: nombre,
         },
-        quantity: 1,
-      };
-      items.push(item);
-    }
+        unit_amount: parseFloat(precio) * 100,
+      },
+      quantity: 1,
+    };
+    items.push(item);
   }
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: items,
+    shipping_address_collection: {
+      allowed_countries: ['MX'],
+    },
     mode: 'payment',
-    success_url: 'https://example.com/success',
+    success_url: 'http://localhost:3000/finalizada',
     cancel_url: 'https://example.com/cancel',
   });
 
   res.json({ id: session.id });
+});
+
+//app.post('/checkout', async (req, res) => {
+
+app.post('/stripeWebHook', async (req, res) => {
+  let event;
+
+  try {
+    const whSec = a; // secret key
+
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      req.headers['stripe-signature']
+    );
+  } catch (error) {
+    console.error('aguas perro, ese no es stripe');
+    return res.sendStatus(400);
+  }
+
+  const dataObject = event.data.object;
+
+  await admin.firestore().collection('ensambles').doc().set({
+    checkoutSessionId: dataObject.id,
+    paymentStatus: dataObject.payment_status,
+    shippingInfo: dataObject.shipping,
+    amountTotal: dataObject.amount_total,
+    partes: dataObject.line_items,
+  });
 });
 
 app.listen(5000, () =>
