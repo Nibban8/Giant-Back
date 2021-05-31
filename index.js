@@ -73,7 +73,7 @@ app.post('/checkout', async (req, res) => {
 app.post(
   '/stripeWebHook',
   express.raw({ type: 'application/json' }),
-  (req, res) => {
+  async (req, res) => {
     const event = req.body;
 
     const dataObject = event.data.object;
