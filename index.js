@@ -60,7 +60,8 @@ app.post('/checkout', async (req, res) => {
       allowed_countries: ['MX'],
     },
     mode: 'payment',
-    success_url: 'http://localhost:3000/finalizada',
+    success_url: 'https://example.com/success',
+    // success_url: 'http://localhost:3000/finalizada',
     cancel_url: 'https://example.com/cancel',
   });
 
