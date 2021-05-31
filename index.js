@@ -74,7 +74,7 @@ app.post('/stripeWebHook', async (req, res) => {
   let event;
 
   try {
-    const whSec = a; // secret key
+    const whSec = whsec_5VVRkDpQQv0DNxns8fDMGqulnkdVdMFT; // secret key
 
     event = stripe.webhooks.constructEvent(
       req.rawBody,
@@ -96,6 +96,6 @@ app.post('/stripeWebHook', async (req, res) => {
   });
 });
 
-app.listen(5000, () =>
+app.listen(${PORT}, () =>
   console.log(`Aplicacion corriendo en puerto ${PORT} \n`)
 );
