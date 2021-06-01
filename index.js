@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const firebase = require("firebase");
-const bodyParser = require("body-parser");
+const { v4: uuid } = require("uuid");
 const { response } = require("express");
 
 const app = express();
@@ -29,68 +29,102 @@ const stripe = require("stripe")(
 
 const PORT = process.env.PORT || 5000;
 
-app.post("/checkout", async (req, res) => {
-  const { equipo } = req.body;
+app.post("/payment", (req, res) => {
+  const { product, token } = req.body;
+  console.log("Producto", product);
 
-  let items = [];
+  const idempotencyKey = uuid();
 
-  let meta = {};
-
-  const querySnapshot = await db.collection("partes").get();
-  const docs = [];
-  querySnapshot.forEach((doc) => {
-    docs.push({ ...doc.data(), id: doc.id, selected: false });
-  });
-
-  for (const parte of equipo) {
-    const { nombre, precio } = docs.find((doc) => doc.id === parte);
-    const item = {
-      price_data: {
-        currency: "mxn",
-        product_data: {
-          name: nombre,
+  return stripe.customers
+    .create({
+      email: token.email,
+      source: token.id,
+    })
+    .then((customer) => {
+      stripe.charges.create(
+        {
+          amount: product.price * 100,
+          currency: "mxn",
+          customer: customer.id,
+          receipt_email: token.email,
+          description: product.name,
+          shipping: {
+            name: token.card.name,
+            address: {
+              country: token.card.address_country,
+              line1: token.card.address_line1,
+            },
+          },
         },
-        unit_amount: parseFloat(precio) * 100,
-      },
-      quantity: 1,
-    };
-    items.push(item);
-  }
-
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    line_items: items,
-    shipping_address_collection: {
-      allowed_countries: ["MX"],
-    },
-    mode: "payment",
-    success_url: "https://example.com/success",
-    // success_url: 'http://localhost:3000/finalizada',
-    cancel_url: "https://example.com/cancel",
-  });
-
-  res.json({ id: session.id });
+        { idempotencyKey }
+      );
+    })
+    .then((result) => res.status(200).json(result))
+    .catch((err) => console.log(err));
 });
 
-app.post(
-  "/stripeWebHook",
-  express.raw({ type: "application/json" }),
-  async (req, res) => {
-    const event = req.body;
+// app.post("/checkout", async (req, res) => {
+//   const { equipo } = req.body;
 
-    const dataObject = event.data.object;
+//   let items = [];
 
-    await db.collection("ensambles").doc().set({
-      checkoutSessionId: dataObject.id,
-      paymentStatus: dataObject.payment_status,
-      shippingInfo: dataObject.shipping,
-      amountTotal: dataObject.amount_total,
-      customerDetails: dataObject.customer_details,
-    });
+//   let meta = {};
 
-    response.json({ received: true });
-  }
-);
+//   const querySnapshot = await db.collection("partes").get();
+//   const docs = [];
+//   querySnapshot.forEach((doc) => {
+//     docs.push({ ...doc.data(), id: doc.id, selected: false });
+//   });
+
+//   for (const parte of equipo) {
+//     const { nombre, precio } = docs.find((doc) => doc.id === parte);
+//     const item = {
+//       price_data: {
+//         currency: "mxn",
+//         product_data: {
+//           name: nombre,
+//         },
+//         unit_amount: parseFloat(precio) * 100,
+//       },
+//       quantity: 1,
+//     };
+//     items.push(item);
+//   }
+
+//   const session = await stripe.checkout.sessions.create({
+//     payment_method_types: ["card"],
+//     line_items: items,
+//     shipping_address_collection: {
+//       allowed_countries: ["MX"],
+//     },
+//     mode: "payment",
+//     success_url: "https://example.com/success",
+//     // success_url: 'http://localhost:3000/finalizada',
+//     cancel_url: "https://example.com/cancel",
+//   });
+
+//   res.json({ id: session.id });
+// });
+
+// app.post(
+//   "/stripeWebHook",
+//   express.raw({ type: "application/json" }),
+//   async (req, res) => {
+//     const event = req.body;
+
+//     const dataObject = event.data.object;
+
+//     await db.collection("ensambles").doc().set({
+//       checkoutSessionId: dataObject.id,
+//       paymentStatus: dataObject.payment_status,
+//       shippingInfo: dataObject.shipping,
+//       amountTotal: dataObject.amount_total,
+//       customerDetails: dataObject.customer_details,
+//     });
+
+//     response.json({ received: true });
+//   }
+// );
 
 // app.use(express.raw({ type: "application/json" }));
 
