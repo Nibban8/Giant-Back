@@ -43,7 +43,9 @@ app.post("/payment", async (req, res) => {
   });
 
   for (const parte of data.equipo) {
-    const { nombre, precio } = docs.find((doc) => doc.id === parte);
+    const { nombre, precio, cantidad, id } = docs.find(
+      (doc) => doc.id === parte
+    );
     partes.push(nombre);
     total = total + parseFloat(precio);
     const item = {
@@ -56,7 +58,7 @@ app.post("/payment", async (req, res) => {
       },
       quantity: 1,
     };
-    items.push(item);
+    items.push({ id: id, cantidad: parseFloat(cantidad) - 1 });
   }
 
   const idempotencyKey = uuid();
@@ -86,14 +88,22 @@ app.post("/payment", async (req, res) => {
       );
     })
     .then(async () => {
-      await db.collection("ensambles").doc().set({
-        cliente: token.card.name,
-        email: token.email,
-        direccion: token.card.address_line1,
-        total: total,
-        partes: partes,
-        cp: token.card.address_zip,
-        ciudad: token.card.address_city,
+      // await db.collection("ensambles").doc().set({
+      //   cliente: token.card.name,
+      //   email: token.email,
+      //   direccion: token.card.address_line1,
+      //   total: total,
+      //   partes: partes,
+      //   cp: token.card.address_zip,
+      //   ciudad: token.card.address_city,
+      // });
+
+      //console.log(items);
+
+      items.forEach((item) => {
+        db.collection("partes")
+          .doc(item.id)
+          .set({ cantidad: item.cantidad }, { merge: true });
       });
     })
     .then((result) => {
