@@ -88,20 +88,19 @@ app.post("/payment", async (req, res) => {
       );
     })
     .then(async () => {
-      // await db.collection("ensambles").doc().set({
-      //   cliente: token.card.name,
-      //   email: token.email,
-      //   direccion: token.card.address_line1,
-      //   total: total,
-      //   partes: partes,
-      //   cp: token.card.address_zip,
-      //   ciudad: token.card.address_city,
-      // });
+      await db.collection("ensambles").doc().set({
+        cliente: token.card.name,
+        email: token.email,
+        direccion: token.card.address_line1,
+        total: total,
+        partes: partes,
+        cp: token.card.address_zip,
+        ciudad: token.card.address_city,
+      });
 
-      //console.log(items);
-
-      items.forEach((item) => {
-        db.collection("partes")
+      items.forEach(async (item) => {
+        await db
+          .collection("partes")
           .doc(item.id)
           .set({ cantidad: item.cantidad }, { merge: true });
       });
